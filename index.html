@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 数字人导游 - 智慧景区导览</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 粒子背景 -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-icon">🏔️</span>
+                <span class="logo-text">AI 数字导游</span>
+            </div>
+            <div class="scene-selector">
+                <label for="sceneSelect">📍 选择景区：</label>
+                <select id="sceneSelect">
+                    <option value="huangshan">黄山</option>
+                    <option value="jiuzhaigou">九寨沟</option>
+                    <option value="gugong">故宫</option>
+                    <option value="lijiang">丽江古城</option>
+                    <option value="guilin">桂林山水</option>
+                </select>
+            </div>
+            <div class="header-actions">
+                <button id="toggleVoiceBtn" class="icon-btn" title="语音播报">
+                    <span class="icon">🔊</span>
+                </button>
+                <button id="themeToggle" class="icon-btn" title="切换主题">
+                    <span class="icon">🌓</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main-container">
+        <!-- 左侧：数字人展示区 -->
+        <section class="digital-human-section">
+            <div class="avatar-container">
+                <!-- 光环效果 -->
+                <div class="avatar-glow"></div>
+                <div class="avatar-ring"></div>
+                <!-- 数字人头像 -->
+                <div class="avatar-wrapper" id="avatarWrapper">
+                    <div class="avatar-face">
+                        <div class="avatar-eyes">
+                            <div class="eye left-eye">
+                                <div class="pupil"></div>
+                            </div>
+                            <div class="eye right-eye">
+                                <div class="pupil"></div>
+                            </div>
+                        </div>
+                        <div class="avatar-mouth" id="avatarMouth"></div>
+                        <div class="avatar-blush left-blush"></div>
+                        <div class="avatar-blush right-blush"></div>
+                    </div>
+                    <!-- 导游帽子 -->
+                    <div class="guide-hat">
+                        <div class="hat-base"></div>
+                        <div class="hat-top"></div>
+                        <div class="hat-badge">导</div>
+                    </div>
+                </div>
+                <!-- 语音波形 -->
+                <div class="voice-waves" id="voiceWaves">
+                    <span class="wave"></span>
+                    <span class="wave"></span>
+                    <span class="wave"></span>
+                    <span class="wave"></span>
+                    <span class="wave"></span>
+                </div>
+                <!-- 状态指示 -->
+                <div class="avatar-status" id="avatarStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">在线待命</span>
+                </div>
+            </div>
+
+            <!-- 快捷问题（动态加载） -->
+            <div class="quick-questions">
+                <p class="quick-title">💡 试试问我：</p>
+                <div class="quick-chips" id="quickChips">
+                    <button class="chip">加载中...</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 右侧：信息展示区 -->
+        <section class="info-section">
+            <!-- 景区介绍卡片 -->
+            <div class="info-card intro-card">
+                <div class="card-header">
+                    <h2 class="scene-name" id="sceneName">黄山</h2>
+                    <span class="scene-badge" id="sceneBadge">世界文化与自然双重遗产</span>
+                </div>
+                <div class="card-body">
+                    <div class="scene-image" id="sceneImage">
+                        <div class="image-placeholder">🏔️</div>
+                    </div>
+                    <div class="scene-intro" id="sceneIntro">
+                        <p>黄山，位于安徽省南部黄山市境内，是中国十大名山之一，以奇松、怪石、云海、温泉"四绝"著称于世。</p>
+                        <p>黄山有72峰，主峰莲花峰海拔1864米。黄山原名"黟山"，因峰岩青黑，遥望苍黛而名。后因传说轩辕黄帝曾在此炼丹修仙，故改名为"黄山"。</p>
+                    </div>
+                    <div class="scene-tags" id="sceneTags">
+                        <span class="tag">🏔️ 奇松</span>
+                        <span class="tag">🪨 怪石</span>
+                        <span class="tag">☁️ 云海</span>
+                        <span class="tag">♨️ 温泉</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI 对话区 -->
+            <div class="info-card chat-card">
+                <div class="card-header">
+                    <h2>💬 AI 智能导游</h2>
+                    <button id="clearChatBtn" class="text-btn">清空对话</button>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-welcome">
+                        <div class="welcome-avatar">🤖</div>
+                        <div class="welcome-text">
+                            <p class="welcome-greeting">你好！我是你的AI数字导游 <strong>小游</strong> 🎉</p>
+                            <p>我对<strong id="welcomeScene">黄山</strong>了如指掌！你可以问我任何关于景区的问题——历史文化、游览路线、特色美食、最佳时间……我随时为你解答！</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <div class="chat-typing-hint" id="typingHint">
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-text">AI 正在输入...</span>
+                    </div>
+                    <div class="input-row">
+                        <input
+                            type="text"
+                            id="chatInput"
+                            placeholder="输入你想了解的内容，按 Enter 发送..."
+                            autocomplete="off"
+                        />
+                        <button id="sendBtn" class="send-btn" title="发送">
+                            <span>➤</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>🏔️ AI 数字导游 &copy; 2026 | 让AI带你领略大美中国</p>
+    </footer>
+
+    <!-- Toast 提示 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/speech.js"></script>
+    <script src="js/avatar.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
