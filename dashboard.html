@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理面板 - AI 数字导游</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🏔️ AI 数字导游</h2>
+                <span>管理后台</span>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="scenes">
+                    <span class="icon">🏔️</span> 景区管理
+                </button>
+                <button class="nav-item" data-tab="questions">
+                    <span class="icon">💬</span> 快捷问题
+                </button>
+                <button class="nav-item" data-tab="config">
+                    <span class="icon">⚙️</span> AI 配置
+                </button>
+                <button class="nav-item" data-tab="password">
+                    <span class="icon">🔒</span> 修改密码
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div id="sidebarUser">admin</div>
+                <button onclick="logout()">退出登录</button>
+            </div>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="main-content">
+            <!-- 景区管理 Tab -->
+            <section id="tab-scenes" class="tab-content">
+                <div class="content-header">
+                    <h2>🏔️ 景区管理</h2>
+                    <p>管理所有景区的信息，编辑后公开站实时生效</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>景区列表</h3>
+                        <button class="btn btn-primary btn-sm" onclick="scenesModule.openAddModal()">+ 新增景区</button>
+                    </div>
+                    <div class="card-body no-padding">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>排序</th>
+                                        <th>景区名称</th>
+                                        <th>标签</th>
+                                        <th>标签数</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scenesTableBody">
+                                    <tr><td colspan="5" class="text-muted">加载中...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 快捷问题 Tab -->
+            <section id="tab-questions" class="tab-content" style="display:none">
+                <div class="content-header">
+                    <h2>💬 快捷问题管理</h2>
+                    <p>管理公开站左侧的快捷提问按钮</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>问题列表</h3>
+                        <button class="btn btn-primary btn-sm" onclick="questionsModule.openAddModal()">+ 新增问题</button>
+                    </div>
+                    <div class="card-body no-padding">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>排序</th>
+                                        <th>问题内容</th>
+                                        <th>关联景区</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="questionsTableBody">
+                                    <tr><td colspan="5" class="text-muted">加载中...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI配置 Tab -->
+            <section id="tab-config" class="tab-content" style="display:none">
+                <div class="content-header">
+                    <h2>⚙️ AI 配置</h2>
+                    <p>修改AI导游的系统提示词、回复风格和管理敏感词</p>
+                </div>
+
+                <!-- 提示词编辑 -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <h3>系统提示词</h3>
+                        <span class="text-muted">占位符: {scene_name} {scene_info} {reply_style}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <textarea id="cfgSystemPrompt" rows="12" placeholder="AI系统提示词..."></textarea>
+                            <span class="hint">定义AI导游的角色、回答规则和行为方式。修改后立即生效。</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 回复风格 -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header"><h3>回复风格</h3></div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <select id="cfgReplyStyle">
+                                <option value="热情幽默">热情幽默</option>
+                                <option value="专业严谨">专业严谨</option>
+                                <option value="简洁明了">简洁明了</option>
+                                <option value="风趣活泼">风趣活泼</option>
+                                <option value="文艺清新">文艺清新</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 敏感词 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>敏感词列表</h3>
+                        <div class="form-inline">
+                            <input type="text" id="newSensitiveWord" placeholder="输入敏感词" style="width:180px">
+                            <button class="btn btn-primary btn-sm" onclick="configModule.addWord()">添加</button>
+                        </div>
+                    </div>
+                    <div class="card-body no-padding">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>敏感词</th><th>状态</th><th>操作</th></tr></thead>
+                                <tbody id="sensitiveWordsTableBody">
+                                    <tr><td colspan="3" class="text-muted">加载中...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="btn btn-primary" onclick="configModule.saveConfig()">💾 保存全部配置</button>
+                </div>
+            </section>
+
+            <!-- 修改密码 Tab -->
+            <section id="tab-password" class="tab-content" style="display:none">
+                <div class="content-header">
+                    <h2>🔒 修改密码</h2>
+                    <p>修改管理员登录密码</p>
+                </div>
+                <div class="card" style="max-width: 480px;">
+                    <div class="card-body">
+                        <form id="passwordForm">
+                            <div class="form-group">
+                                <label>当前密码</label>
+                                <input type="password" id="pwdCurrent" required>
+                            </div>
+                            <div class="form-group">
+                                <label>新密码</label>
+                                <input type="password" id="pwdNew" required minlength="6" placeholder="至少6位">
+                            </div>
+                            <div class="form-group">
+                                <label>确认新密码</label>
+                                <input type="password" id="pwdConfirm" required minlength="6">
+                            </div>
+                            <div id="pwdError" class="login-error"></div>
+                            <button type="submit" class="btn btn-primary">修改密码</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 景区编辑弹窗 -->
+    <div class="modal-overlay" id="sceneModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="sceneModalTitle">新增景区</h3>
+                <button class="modal-close" onclick="scenesModule.closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="sceneForm">
+                    <input type="hidden" id="sfId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ID (英文标识)</label>
+                            <input type="text" id="sfSlug" placeholder="如: huangshan" required>
+                            <span class="hint">用于URL和数据库标识，创建后不可修改</span>
+                        </div>
+                        <div class="form-group">
+                            <label>排序序号</label>
+                            <input type="number" id="sfSort" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>景区名称</label>
+                            <input type="text" id="sfName" placeholder="如: 黄山" required>
+                        </div>
+                        <div class="form-group">
+                            <label>徽章文字</label>
+                            <input type="text" id="sfBadge" placeholder="如: 世界文化与自然双重遗产">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Emoji图标</label>
+                        <input type="text" id="sfEmoji" placeholder="🏔️">
+                    </div>
+                    <div class="form-group">
+                        <label>详细介绍</label>
+                        <textarea id="sfIntro" rows="6" placeholder="景区介绍文字，用空行分段..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>特色标签（逗号分隔）</label>
+                        <input type="text" id="sfTags" placeholder="🏔️ 奇松, 🪨 怪石, ☁️ 云海">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="scenesModule.closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="scenesModule.saveScene()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 问题编辑弹窗 -->
+    <div class="modal-overlay" id="questionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="questionModalTitle">新增问题</h3>
+                <button class="modal-close" onclick="questionsModule.closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="questionForm">
+                    <input type="hidden" id="qfId">
+                    <div class="form-group">
+                        <label>问题内容</label>
+                        <input type="text" id="qfQuestion" placeholder="如: 这里有什么好玩的地方？" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>关联景区</label>
+                            <select id="qfSceneId">
+                                <option value="">全局（所有景区）</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>排序</label>
+                            <input type="number" id="qfSort" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="qfActive" checked> 启用
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="questionsModule.closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="questionsModule.saveQuestion()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/scenes.js"></script>
+    <script src="js/questions.js"></script>
+    <script src="js/config.js"></script>
+</body>
+</html>
